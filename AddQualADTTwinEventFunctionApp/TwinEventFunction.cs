@@ -33,13 +33,7 @@ namespace AddQualADTTwinEventFunctionApp
                 {
                     URCobotModel urCobotModel = JsonConvert.DeserializeObject<URCobotModel>(eventGridEvent.Data.ToString());
                     Azure.JsonPatchDocument azureJsonPatchDocument = new Azure.JsonPatchDocument();
-                    JointPositionModel jointPositionModel = new JointPositionModel();
-                    jointPositionModel.Base = 100.01;
-                    jointPositionModel.Shoulder = 200.01;
-                    jointPositionModel.Elbow = 300.01;
-                    jointPositionModel.Wrist1 = 400.01;
-                    jointPositionModel.Wrist2 = 500.01;
-                    jointPositionModel.Wrist3 = 600.01;
+                    JointPositionModel jointPositionModel = JointPositionModel.GetDegrees(urCobotModel);
                     azureJsonPatchDocument.AppendAdd("/IsPaused", true);
                     azureJsonPatchDocument.AppendAdd("/IsSafetyPopupClosed", true);
                     azureJsonPatchDocument.AppendAdd("/IsProtectiveStopUnlocked", true);
