@@ -38,11 +38,18 @@ namespace AddQualADTTwinEventFunctionApp
                 else if (jObject["dataschema"].ToString().Equals("dtmi:com:AddQual:Factory:ScanBox:Cobot:URGripper;1"))
                 {
                     URGripperModel urGripperModel = JsonConvert.DeserializeObject<URGripperModel>(eventGridEvent.Data.ToString());
+
                     Azure.JsonPatchDocument azureJsonPatchDocument = new Azure.JsonPatchDocument();
                     azureJsonPatchDocument.AppendAdd("/IsActive", urGripperModel.data.ACT);
+
+                    if (urGripperModel.data.ACT == 1) azureJsonPatchDocument.AppendAdd("/IsActive", true);
+                    else azureJsonPatchDocument.AppendAdd("/IsActive", false);
+
                     if (urGripperModel.data.POS < 10) azureJsonPatchDocument.AppendAdd("/IsOpen", true);
                     else azureJsonPatchDocument.AppendAdd("/IsOpen", false);
+
                     azureJsonPatchDocument.AppendAdd("/IsInvoked", false);
+
                     await digitalTwinsClient.UpdateDigitalTwinAsync("URGripper", azureJsonPatchDocument);
                 }
             }
