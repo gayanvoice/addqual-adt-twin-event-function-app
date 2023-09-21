@@ -32,7 +32,24 @@ namespace AddQualADTTwinEventFunctionApp
                 {
                     URCobotModel urCobotModel = JsonConvert.DeserializeObject<URCobotModel>(eventGridEvent.Data.ToString());
                     Azure.JsonPatchDocument azureJsonPatchDocument = new Azure.JsonPatchDocument();
-                    log.LogInformation(urCobotModel.data.ActualQ.ToArray().ToString());
+
+                    azureJsonPatchDocument.AppendAdd("/IsPaused", true);
+                    azureJsonPatchDocument.AppendAdd("/IsPlay", true);
+                    azureJsonPatchDocument.AppendAdd("/IsSafetyPopupClosed", true);
+                    azureJsonPatchDocument.AppendAdd("/IsProtectiveStopUnlocked", true);
+                    azureJsonPatchDocument.AppendAdd("/IsPowerOn", true);
+                    azureJsonPatchDocument.AppendAdd("/IsFreeDriveModeEnabled", true);
+                    azureJsonPatchDocument.AppendAdd("/IsTeachModeEnabled", true);
+                    azureJsonPatchDocument.AppendAdd("/CobotJointPosition/Base", 1);
+                    azureJsonPatchDocument.AppendAdd("/CobotJointPosition/Shoulder", 1);
+                    azureJsonPatchDocument.AppendAdd("/CobotJointPosition/Elbow", 1);
+                    azureJsonPatchDocument.AppendAdd("/CobotJointPosition/Wrist1", 1);
+                    azureJsonPatchDocument.AppendAdd("/CobotJointPosition/Wrist2", 1);
+                    azureJsonPatchDocument.AppendAdd("/CobotJointPosition/Wrist3", 1);
+                    azureJsonPatchDocument.AppendAdd("/IsInvoked", false);
+                    azureJsonPatchDocument.AppendAdd("/TargetQ", urCobotModel.data.TargetQ);
+
+                    await digitalTwinsClient.UpdateDigitalTwinAsync("URCobot", azureJsonPatchDocument);
 
                 }
                 else if (jObject["dataschema"].ToString().Equals("dtmi:com:AddQual:Factory:ScanBox:Cobot:URGripper;1"))
