@@ -39,13 +39,73 @@ namespace AddQualADTTwinEventFunctionApp
                 {
                     URGripperModel urGripperModel = JsonConvert.DeserializeObject<URGripperModel>(eventGridEvent.Data.ToString());
                     Azure.JsonPatchDocument azureJsonPatchDocument = new Azure.JsonPatchDocument();
-                    azureJsonPatchDocument.AppendReplace("/IsActive", urGripperModel.data.ACT);
-                    if (urGripperModel.data.POS < 10) azureJsonPatchDocument.AppendReplace("/IsOpen", true);
-                    else azureJsonPatchDocument.AppendReplace("/IsOpen", false);
-                    azureJsonPatchDocument.AppendReplace("/IsInvoked", false);
+                    azureJsonPatchDocument.AppendAdd("/IsActive", urGripperModel.data.ACT);
+                    if (urGripperModel.data.POS < 10) azureJsonPatchDocument.AppendAdd("/IsOpen", true);
+                    else azureJsonPatchDocument.AppendAdd("/IsOpen", false);
+                    azureJsonPatchDocument.AppendAdd("/IsInvoked", false);
                     await digitalTwinsClient.UpdateDigitalTwinAsync("URGripper", azureJsonPatchDocument);
                 }
             }
         }
     }
 }
+
+//[
+//  {
+//    "op": "add",
+//    "path": "/CobotJointPosition",
+//    "value": {
+//      "Base": 1,
+//      "Shoulder": 2,
+//      "Elbow": 3,
+//      "Wrist1": 4,
+//      "Wrist2": 5,
+//      "Wrist3": 6
+//    }
+//  },
+//  {
+//    "op": "add",
+//    "path": "/IsFreeDriveModeEnabled",
+//    "value": true
+//  },
+//  {
+//    "op": "add",
+//    "path": "/IsInvoked",
+//    "value": true
+//  },
+//  {
+//    "op": "add",
+//    "path": "/IsPaused",
+//    "value": true
+//  },
+//  {
+//    "op": "add",
+//    "path": "/IsPlay",
+//    "value": true
+//  },
+//  {
+//    "op": "add",
+//    "path": "/IsPowerOn",
+//    "value": true
+//  },
+//  {
+//    "op": "add",
+//    "path": "/IsProtectiveStopUnlocked",
+//    "value": true
+//  },
+//  {
+//    "op": "add",
+//    "path": "/IsSafetyPopupClosed",
+//    "value": true
+//  },
+//  {
+//    "op": "add",
+//    "path": "/IsTeachModeEnabled",
+//    "value": true
+//  },
+//  {
+//    "op": "add",
+//    "path": "/PopupText",
+//    "value": "454"
+//  }
+//]
