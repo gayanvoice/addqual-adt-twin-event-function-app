@@ -39,13 +39,11 @@ namespace AddQualADTTwinEventFunctionApp
                 {
                     URGripperModel urGripperModel = JsonConvert.DeserializeObject<URGripperModel>(eventGridEvent.Data.ToString());
                     Azure.JsonPatchDocument azureJsonPatchDocument = new Azure.JsonPatchDocument();
-                    log.LogInformation(urGripperModel.data.ACT.ToString());
-                    log.LogInformation(urGripperModel.data.POS.ToString());
-                    //    azureJsonPatchDocument.AppendReplace("/IsActive", urGripperModel.data.ACT);
-                    //    if (urGripperModel.data.POS < 10) azureJsonPatchDocument.AppendReplace("/IsOpen", true);
-                    //    else azureJsonPatchDocument.AppendReplace("/IsOpen", false);
-                    //    azureJsonPatchDocument.AppendReplace("/IsInvoked", false);
-                    //    await digitalTwinsClient.UpdateDigitalTwinAsync("URGripper", azureJsonPatchDocument);
+                    azureJsonPatchDocument.AppendReplace("/IsActive", urGripperModel.data.ACT);
+                    if (urGripperModel.data.POS < 10) azureJsonPatchDocument.AppendReplace("/IsOpen", true);
+                    else azureJsonPatchDocument.AppendReplace("/IsOpen", false);
+                    azureJsonPatchDocument.AppendReplace("/IsInvoked", false);
+                    await digitalTwinsClient.UpdateDigitalTwinAsync("URGripper", azureJsonPatchDocument);
                 }
             }
         }
