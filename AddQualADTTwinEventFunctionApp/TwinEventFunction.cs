@@ -5,15 +5,46 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.EventGrid;
 using Microsoft.Extensions.Logging;
 using Azure.Messaging.EventGrid;
+using Azure.DigitalTwins.Core;
+using Azure.Identity;
+using Newtonsoft.Json;
+using AddQualADTTwinEventFunctionApp.Model;
+using Newtonsoft.Json.Linq;
+using System.Threading.Tasks;
 
 namespace AddQualADTTwinEventFunctionApp
 {
     public static class TwinEventFunction
     {
+        private static readonly string ADT_SERVICE_URL = Environment.GetEnvironmentVariable("ADT_SERVICE_URL");
         [FunctionName("TwinEventFunction")]
-        public static void Run([EventGridTrigger]EventGridEvent eventGridEvent, ILogger log)
+        public static async Task RunAsync([EventGridTrigger]EventGridEvent eventGridEvent, ILogger log)
         {
-            log.LogInformation(eventGridEvent.Data.ToString());
+            DefaultAzureCredential defaultAzureCredential = new DefaultAzureCredential();
+            DigitalTwinsClient digitalTwinsClient = new DigitalTwinsClient(endpoint: new Uri(ADT_SERVICE_URL), credential: defaultAzureCredential);
+
+            if (eventGridEvent != null && eventGridEvent.Data != null)
+            {
+                JObject jObject = JsonConvert.DeserializeObject<JObject>(eventGridEvent.Data.ToString());
+                if (jObject["dataschema"].ToString().Equals("dtmi:com:AddQual:Factory:ScanBox:Cobot:URCobot;1"))
+                {
+                    log.LogInformation(eventGridEvent.Data.ToString());
+                    URCobotModel urCobotModel = JsonConvert.DeserializeObject<URCobotModel>(eventGridEvent.Data.ToString());
+                    Azure.JsonPatchDocument azureJsonPatchDocument = new Azure.JsonPatchDocument();
+
+                } 
+                else if (jObject["dataschema"].ToString().Equals("dtmi:com:AddQual:Factory:ScanBox:Cobot:URGripper;1"))
+                {
+                    log.LogInformation(eventGridEvent.Data.ToString());
+                    URGripperModel urGripperModel = JsonConvert.DeserializeObject<URGripperModel>(eventGridEvent.Data.ToString());
+                    Azure.JsonPatchDocument azureJsonPatchDocument = new Azure.JsonPatchDocument();
+                    azureJsonPatchDocument.AppendReplace("/IsActive", urGripperModel.data.ACT);
+                    if (urGripperModel.data.POS < 10) azureJsonPatchDocument.AppendReplace("/IsOpen", true);
+                    else azureJsonPatchDocument.AppendReplace("/IsOpen", false);
+                    azureJsonPatchDocument.AppendReplace("/IsInvoked", false);
+                    await digitalTwinsClient.UpdateDigitalTwinAsync("URGripper", azureJsonPatchDocument);
+                }
+            }
         }
     }
 }
