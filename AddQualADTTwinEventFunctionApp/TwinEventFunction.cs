@@ -26,24 +26,26 @@ namespace AddQualADTTwinEventFunctionApp
             if (eventGridEvent != null && eventGridEvent.Data != null)
             {
                 JObject jObject = JsonConvert.DeserializeObject<JObject>(eventGridEvent.Data.ToString());
-                if (jObject["dataschema"].ToString().Equals("dtmi:com:AddQual:Factory:ScanBox:Cobot:URCobot;1"))
-                {
-                    log.LogInformation(eventGridEvent.Data.ToString());
-                    URCobotModel urCobotModel = JsonConvert.DeserializeObject<URCobotModel>(eventGridEvent.Data.ToString());
-                    Azure.JsonPatchDocument azureJsonPatchDocument = new Azure.JsonPatchDocument();
+                log.LogInformation(jObject["dataschema"].ToString());
 
-                } 
-                else if (jObject["dataschema"].ToString().Equals("dtmi:com:AddQual:Factory:ScanBox:Cobot:URGripper;1"))
-                {
-                    log.LogInformation(eventGridEvent.Data.ToString());
-                    URGripperModel urGripperModel = JsonConvert.DeserializeObject<URGripperModel>(eventGridEvent.Data.ToString());
-                    Azure.JsonPatchDocument azureJsonPatchDocument = new Azure.JsonPatchDocument();
-                    azureJsonPatchDocument.AppendReplace("/IsActive", urGripperModel.data.ACT);
-                    if (urGripperModel.data.POS < 10) azureJsonPatchDocument.AppendReplace("/IsOpen", true);
-                    else azureJsonPatchDocument.AppendReplace("/IsOpen", false);
-                    azureJsonPatchDocument.AppendReplace("/IsInvoked", false);
-                    await digitalTwinsClient.UpdateDigitalTwinAsync("URGripper", azureJsonPatchDocument);
-                }
+                //if (jObject["dataschema"].ToString().Equals("dtmi:com:AddQual:Factory:ScanBox:Cobot:URCobot;1"))
+                //{
+                //    log.LogInformation(eventGridEvent.Data.ToString());
+                //    URCobotModel urCobotModel = JsonConvert.DeserializeObject<URCobotModel>(eventGridEvent.Data.ToString());
+                //    Azure.JsonPatchDocument azureJsonPatchDocument = new Azure.JsonPatchDocument();
+
+                //} 
+                //else if (jObject["dataschema"].ToString().Equals("dtmi:com:AddQual:Factory:ScanBox:Cobot:URGripper;1"))
+                //{
+                //    log.LogInformation(eventGridEvent.Data.ToString());
+                //    URGripperModel urGripperModel = JsonConvert.DeserializeObject<URGripperModel>(eventGridEvent.Data.ToString());
+                //    Azure.JsonPatchDocument azureJsonPatchDocument = new Azure.JsonPatchDocument();
+                //    azureJsonPatchDocument.AppendReplace("/IsActive", urGripperModel.data.ACT);
+                //    if (urGripperModel.data.POS < 10) azureJsonPatchDocument.AppendReplace("/IsOpen", true);
+                //    else azureJsonPatchDocument.AppendReplace("/IsOpen", false);
+                //    azureJsonPatchDocument.AppendReplace("/IsInvoked", false);
+                //    await digitalTwinsClient.UpdateDigitalTwinAsync("URGripper", azureJsonPatchDocument);
+                //}
             }
         }
     }
