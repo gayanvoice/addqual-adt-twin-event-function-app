@@ -12,7 +12,6 @@ using AddQualADTTwinEventFunctionApp.Model;
 using Newtonsoft.Json.Linq;
 using System.Threading.Tasks;
 using AddQualADTTwinEventFunctionApp.Root;
-using Microsoft.AspNetCore.Http;
 using Azure;
 
 namespace AddQualADTTwinEventFunctionApp
@@ -33,23 +32,17 @@ namespace AddQualADTTwinEventFunctionApp
 
                 if (jObject["dataschema"].ToString().Equals("dtmi:com:AddQual:Factory:ScanBox:Cobot:URCobot;1"))
                 {
-                    BasicDigitalTwin basicDigitalTwin = await GetBasicDigitalTwinAsync(
-                        twinId: "URCobot", digitalTwinsClient: digitalTwinsClient);
-                    Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(basicDigitalTwin));
                     URCobotModel urCobotModel = JsonConvert.DeserializeObject<URCobotModel>(eventGridEvent.Data.ToString());
-                    Azure.JsonPatchDocument azureJsonPatchDocument = new Azure.JsonPatchDocument();
+                    JsonPatchDocument azureJsonPatchDocument = new JsonPatchDocument();
                     JointPositionModel jointPositionModel = JointPositionModel.GetDegrees(urCobotModel);
                     azureJsonPatchDocument.AppendAdd("/JointPosition", jointPositionModel);
+                    azureJsonPatchDocument.AppendAdd("/IsInvoked", false);
                     await digitalTwinsClient.UpdateDigitalTwinAsync("URCobot", azureJsonPatchDocument);
                 }
                 else if (jObject["dataschema"].ToString().Equals("dtmi:com:AddQual:Factory:ScanBox:Cobot:URGripper;1"))
                 {
-                    BasicDigitalTwin basicDigitalTwin = await GetBasicDigitalTwinAsync(
-                        twinId: "URGripper", digitalTwinsClient: digitalTwinsClient);
-                    Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(basicDigitalTwin));
                     URGripperModel urGripperModel = JsonConvert.DeserializeObject<URGripperModel>(eventGridEvent.Data.ToString());
-                    Azure.JsonPatchDocument azureJsonPatchDocument = new Azure.JsonPatchDocument();
-                    azureJsonPatchDocument.AppendAdd("/IsActive", urGripperModel.data.ACT);
+                    JsonPatchDocument azureJsonPatchDocument = new JsonPatchDocument();
                     if (urGripperModel.data.ACT == 1) azureJsonPatchDocument.AppendAdd("/IsActive", true);
                     else azureJsonPatchDocument.AppendAdd("/IsActive", false);
                     if (urGripperModel.data.POS < 10) azureJsonPatchDocument.AppendAdd("/IsOpen", true);
@@ -59,79 +52,5 @@ namespace AddQualADTTwinEventFunctionApp
                 }
             }
         }
-        private static async Task<BasicDigitalTwin> GetBasicDigitalTwinAsync(
-            string twinId, DigitalTwinsClient digitalTwinsClient)
-        {
-            Console.WriteLine("GetBasicDigitalTwinAsync");
-            Response<BasicDigitalTwin> twinResponse = await digitalTwinsClient.GetDigitalTwinAsync<BasicDigitalTwin>(twinId);
-            BasicDigitalTwin basicDigitalTwin = twinResponse.Value;
-            Console.WriteLine($"Model id: {basicDigitalTwin.Metadata.ModelId}");
-            foreach (string prop in basicDigitalTwin.Contents.Keys)
-            {
-                if (basicDigitalTwin.Contents.TryGetValue(prop, out object value))
-                    Console.WriteLine($"Property '{prop}': {value}");
-            }
-            return basicDigitalTwin;
-        }
     }
 }
-
-//[
-//  {
-//    "op": "add",
-//    "path": "/CobotJointPosition",
-//    "value": {
-//      "Base": 1,
-//      "Shoulder": 2,
-//      "Elbow": 3,
-//      "Wrist1": 4,
-//      "Wrist2": 5,
-//      "Wrist3": 6
-//    }
-//  },
-//  {
-//    "op": "add",
-//    "path": "/IsFreeDriveModeEnabled",
-//    "value": true
-//  },
-//  {
-//    "op": "add",
-//    "path": "/IsInvoked",
-//    "value": true
-//  },
-//  {
-//    "op": "add",
-//    "path": "/IsPaused",
-//    "value": true
-//  },
-//  {
-//    "op": "add",
-//    "path": "/IsPlay",
-//    "value": true
-//  },
-//  {
-//    "op": "add",
-//    "path": "/IsPowerOn",
-//    "value": true
-//  },
-//  {
-//    "op": "add",
-//    "path": "/IsProtectiveStopUnlocked",
-//    "value": true
-//  },
-//  {
-//    "op": "add",
-//    "path": "/IsSafetyPopupClosed",
-//    "value": true
-//  },
-//  {
-//    "op": "add",
-//    "path": "/IsTeachModeEnabled",
-//    "value": true
-//  },
-//  {
-//    "op": "add",
-//    "path": "/PopupText",
-//    "value": "454"
-//  }
-//]
