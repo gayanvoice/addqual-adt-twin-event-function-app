@@ -12,6 +12,8 @@ using AddQualADTTwinEventFunctionApp.Model;
 using Newtonsoft.Json.Linq;
 using System.Threading.Tasks;
 using AddQualADTTwinEventFunctionApp.Root;
+using Microsoft.AspNetCore.Http;
+using Azure;
 
 namespace AddQualADTTwinEventFunctionApp
 {
@@ -31,21 +33,18 @@ namespace AddQualADTTwinEventFunctionApp
 
                 if (jObject["dataschema"].ToString().Equals("dtmi:com:AddQual:Factory:ScanBox:Cobot:URCobot;1"))
                 {
+                    BasicDigitalTwin basicDigitalTwin = await GetBasicDigitalTwinAsync(
+                        twinId: "URCobot", digitalTwinsClient: digitalTwinsClient);
                     URCobotModel urCobotModel = JsonConvert.DeserializeObject<URCobotModel>(eventGridEvent.Data.ToString());
                     Azure.JsonPatchDocument azureJsonPatchDocument = new Azure.JsonPatchDocument();
                     JointPositionModel jointPositionModel = JointPositionModel.GetDegrees(urCobotModel);
-                    azureJsonPatchDocument.AppendAdd("/IsPaused", true);
-                    azureJsonPatchDocument.AppendAdd("/IsSafetyPopupClosed", true);
-                    azureJsonPatchDocument.AppendAdd("/IsProtectiveStopUnlocked", true);
-                    azureJsonPatchDocument.AppendAdd("/IsPowerOn", true);
-                    azureJsonPatchDocument.AppendAdd("/IsFreeDriveModeEnabled", true);
-                    azureJsonPatchDocument.AppendAdd("/IsTeachModeEnabled", true);
                     azureJsonPatchDocument.AppendAdd("/JointPosition", jointPositionModel);
-                    azureJsonPatchDocument.AppendAdd("/IsInvoked", false);
                     await digitalTwinsClient.UpdateDigitalTwinAsync("URCobot", azureJsonPatchDocument);
                 }
                 else if (jObject["dataschema"].ToString().Equals("dtmi:com:AddQual:Factory:ScanBox:Cobot:URGripper;1"))
                 {
+                    BasicDigitalTwin basicDigitalTwin = await GetBasicDigitalTwinAsync(
+                        twinId: "URCobot", digitalTwinsClient: digitalTwinsClient);
                     URGripperModel urGripperModel = JsonConvert.DeserializeObject<URGripperModel>(eventGridEvent.Data.ToString());
                     Azure.JsonPatchDocument azureJsonPatchDocument = new Azure.JsonPatchDocument();
                     azureJsonPatchDocument.AppendAdd("/IsActive", urGripperModel.data.ACT);
@@ -57,6 +56,19 @@ namespace AddQualADTTwinEventFunctionApp
                     await digitalTwinsClient.UpdateDigitalTwinAsync("URGripper", azureJsonPatchDocument);
                 }
             }
+        }
+        private static async Task<BasicDigitalTwin> GetBasicDigitalTwinAsync(
+            string twinId, DigitalTwinsClient digitalTwinsClient)
+        {
+           Response<BasicDigitalTwin> twinResponse = await digitalTwinsClient.GetDigitalTwinAsync<BasicDigitalTwin>(twinId);
+            BasicDigitalTwin basicDigitalTwin = twinResponse.Value;
+            Console.WriteLine($"Model id: {basicDigitalTwin.Metadata.ModelId}");
+            foreach (string prop in basicDigitalTwin.Contents.Keys)
+            {
+                if (basicDigitalTwin.Contents.TryGetValue(prop, out object value))
+                    Console.WriteLine($"Property '{prop}': {value}");
+            }
+            return basicDigitalTwin;
         }
     }
 }
