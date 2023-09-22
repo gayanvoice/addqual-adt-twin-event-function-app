@@ -43,8 +43,6 @@ namespace AddQualADTTwinEventFunctionApp
                 {
                     URGripperModel urGripperModel = JsonConvert.DeserializeObject<URGripperModel>(eventGridEvent.Data.ToString());
                     JsonPatchDocument azureJsonPatchDocument = new JsonPatchDocument();
-                    if (urGripperModel.data.ACT == 1) azureJsonPatchDocument.AppendAdd("/IsActive", true);
-                    else azureJsonPatchDocument.AppendAdd("/IsActive", false);
                     if (urGripperModel.data.POS < 10) azureJsonPatchDocument.AppendAdd("/IsOpen", true);
                     else azureJsonPatchDocument.AppendAdd("/IsOpen", false);
                     azureJsonPatchDocument.AppendAdd("/IsInvoked", false);
