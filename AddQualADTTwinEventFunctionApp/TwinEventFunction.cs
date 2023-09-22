@@ -35,6 +35,7 @@ namespace AddQualADTTwinEventFunctionApp
                 {
                     BasicDigitalTwin basicDigitalTwin = await GetBasicDigitalTwinAsync(
                         twinId: "URCobot", digitalTwinsClient: digitalTwinsClient);
+                    Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(basicDigitalTwin));
                     URCobotModel urCobotModel = JsonConvert.DeserializeObject<URCobotModel>(eventGridEvent.Data.ToString());
                     Azure.JsonPatchDocument azureJsonPatchDocument = new Azure.JsonPatchDocument();
                     JointPositionModel jointPositionModel = JointPositionModel.GetDegrees(urCobotModel);
@@ -44,7 +45,8 @@ namespace AddQualADTTwinEventFunctionApp
                 else if (jObject["dataschema"].ToString().Equals("dtmi:com:AddQual:Factory:ScanBox:Cobot:URGripper;1"))
                 {
                     BasicDigitalTwin basicDigitalTwin = await GetBasicDigitalTwinAsync(
-                        twinId: "URCobot", digitalTwinsClient: digitalTwinsClient);
+                        twinId: "URGripper", digitalTwinsClient: digitalTwinsClient);
+                    Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(basicDigitalTwin));
                     URGripperModel urGripperModel = JsonConvert.DeserializeObject<URGripperModel>(eventGridEvent.Data.ToString());
                     Azure.JsonPatchDocument azureJsonPatchDocument = new Azure.JsonPatchDocument();
                     azureJsonPatchDocument.AppendAdd("/IsActive", urGripperModel.data.ACT);
@@ -60,7 +62,8 @@ namespace AddQualADTTwinEventFunctionApp
         private static async Task<BasicDigitalTwin> GetBasicDigitalTwinAsync(
             string twinId, DigitalTwinsClient digitalTwinsClient)
         {
-           Response<BasicDigitalTwin> twinResponse = await digitalTwinsClient.GetDigitalTwinAsync<BasicDigitalTwin>(twinId);
+            Console.WriteLine("GetBasicDigitalTwinAsync");
+            Response<BasicDigitalTwin> twinResponse = await digitalTwinsClient.GetDigitalTwinAsync<BasicDigitalTwin>(twinId);
             BasicDigitalTwin basicDigitalTwin = twinResponse.Value;
             Console.WriteLine($"Model id: {basicDigitalTwin.Metadata.ModelId}");
             foreach (string prop in basicDigitalTwin.Contents.Keys)
