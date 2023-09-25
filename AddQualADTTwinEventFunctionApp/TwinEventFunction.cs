@@ -34,21 +34,34 @@ namespace AddQualADTTwinEventFunctionApp
                 {
                     URCobotModel urCobotModel = JsonConvert.DeserializeObject<URCobotModel>(eventGridEvent.Data.ToString());
                     JsonPatchDocument azureJsonPatchDocument = new JsonPatchDocument();
-                    JointPositionModel jointPositionModel = JointPositionModel.GetDegrees(urCobotModel);
-                    azureJsonPatchDocument.AppendAdd("/JointPosition", jointPositionModel);
-                    azureJsonPatchDocument.AppendAdd("/IsInvoked", false);
+                    JointPositionModel actualQJointPositionModel = JointPositionModel.GetDegreesOfActualQ(urCobotModel);
+                    JointPositionModel targetQJointPositionModel = JointPositionModel.GetDegreesOfTargetQ(urCobotModel);
+                    azureJsonPatchDocument.AppendAdd("/ActualQJointPosition", actualQJointPositionModel);
+                    if (actualQJointPositionModel.Equals(targetQJointPositionModel)) azureJsonPatchDocument.AppendAdd("/IsMoving", false);
+                    else azureJsonPatchDocument.AppendAdd("/IsMoving", true);
                     await digitalTwinsClient.UpdateDigitalTwinAsync("URCobot", azureJsonPatchDocument);
                 }
                 else if (jObject["dataschema"].ToString().Equals("dtmi:com:AddQual:Factory:ScanBox:Cobot:URGripper;1"))
                 {
+                    BasicDigitalTwin urGripperBasicDigitalTwin = await GetBasicDigitalTwinAsync(twinId: "URGripper", digitalTwinsClient: digitalTwinsClient);
+                    URGripperTwinModel urGripperTwinModel = URGripperTwinModel.Get(urGripperBasicDigitalTwin);
                     URGripperModel urGripperModel = JsonConvert.DeserializeObject<URGripperModel>(eventGridEvent.Data.ToString());
                     JsonPatchDocument azureJsonPatchDocument = new JsonPatchDocument();
-                    if (urGripperModel.data.POS < 10) azureJsonPatchDocument.AppendAdd("/IsOpen", true);
-                    else azureJsonPatchDocument.AppendAdd("/IsOpen", false);
-                    azureJsonPatchDocument.AppendAdd("/IsInvoked", false);
+                    if (urGripperTwinModel.Position == urGripperModel.data.POS)
+                    {
+                        if (urGripperModel.data.POS < 10) azureJsonPatchDocument.AppendAdd("/IsOpen", true);
+                        else azureJsonPatchDocument.AppendAdd("/IsOpen", false);
+                        azureJsonPatchDocument.AppendAdd("/Position", urGripperModel.data.POS);
+                    }
                     await digitalTwinsClient.UpdateDigitalTwinAsync("URGripper", azureJsonPatchDocument);
                 }
             }
+        }
+        private static async Task<BasicDigitalTwin> GetBasicDigitalTwinAsync(
+          string twinId, DigitalTwinsClient digitalTwinsClient)
+        {
+            Response<BasicDigitalTwin> twinResponse = await digitalTwinsClient.GetDigitalTwinAsync<BasicDigitalTwin>(twinId);
+            return twinResponse.Value;
         }
     }
 }
