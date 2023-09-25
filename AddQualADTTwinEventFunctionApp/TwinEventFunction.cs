@@ -51,8 +51,8 @@ namespace AddQualADTTwinEventFunctionApp
                     {
                         if (urGripperModel.data.POS < 10) azureJsonPatchDocument.AppendAdd("/IsOpen", true);
                         else azureJsonPatchDocument.AppendAdd("/IsOpen", false);
-                        azureJsonPatchDocument.AppendAdd("/Position", urGripperModel.data.POS);
                     }
+                    azureJsonPatchDocument.AppendAdd("/Position", urGripperModel.data.POS);
                     await digitalTwinsClient.UpdateDigitalTwinAsync("URGripper", azureJsonPatchDocument);
                 }
             }
