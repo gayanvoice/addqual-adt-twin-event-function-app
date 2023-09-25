@@ -4,8 +4,8 @@ namespace AddQualADTTwinEventFunctionApp.Model
 {
     public class URGripperTwinModel
     {
-        public int Position { get; set; }
         public bool IsOpen{ get; set; }
+        public bool IsInvoked{ get; set; }
         public static URGripperTwinModel GetFromBasicDigitalTwin(BasicDigitalTwin basicDigitalTwin)
         {
             URGripperTwinModel urGripperTwinModel = new URGripperTwinModel();
@@ -18,8 +18,9 @@ namespace AddQualADTTwinEventFunctionApp.Model
                         string stringValue = value.ToString();
                         if (stringValue is not null)
                         {
-                            if (property.Equals("Position")) urGripperTwinModel.Position = int.Parse(stringValue);
-                            if (property.Equals("IsOpen")) urGripperTwinModel.IsOpen = bool.Parse(stringValue);
+                            bool boolValue = bool.Parse(stringValue);
+                            if (property.Equals("IsInvoked")) urGripperTwinModel.IsInvoked = boolValue;
+                            if (property.Equals("IsOpen")) urGripperTwinModel.IsOpen = boolValue;
 
                         }
                     }
@@ -27,31 +28,26 @@ namespace AddQualADTTwinEventFunctionApp.Model
             }
             return urGripperTwinModel;
         }
-        public static URGripperTwinModel GetFromExistingDigitalTwin(
-            URGripperModel urGripperModel, 
-            URGripperTwinModel existingURGripperTwinModel)
+        public static URGripperTwinModel GetFromExistingDigitalTwin(URGripperModel urGripperModel)
         {
             URGripperTwinModel urGripperTwinModel = new URGripperTwinModel();
-            if (existingURGripperTwinModel.Position == urGripperModel.data.POS)
-            {
-                if (urGripperModel.data.POS < 10) urGripperTwinModel.IsOpen = true;
-                else urGripperTwinModel.IsOpen = false;
-            }
-            urGripperTwinModel.Position = urGripperModel.data.POS;
+            if (urGripperModel.data.POS < 10) urGripperTwinModel.IsOpen = true;
+            else urGripperTwinModel.IsOpen = false;
+            urGripperTwinModel.IsInvoked = false;
             return urGripperTwinModel;
         }
-        public override bool Equals(object obj)
-        {
-            if (obj == null || GetType() != obj.GetType())
-                return false;
+        //public override bool Equals(object obj)
+        //{
+        //    if (obj == null || GetType() != obj.GetType())
+        //        return false;
 
-            URGripperTwinModel other = (URGripperTwinModel) obj;
-            return IsOpen == other.IsOpen && Position == other.Position;
-        }
+        //    URGripperTwinModel other = (URGripperTwinModel) obj;
+        //    return IsOpen == other.IsOpen && Position == other.Position;
+        //}
 
-        public override int GetHashCode()
-        {
-            return (IsOpen, Position).GetHashCode();
-        }
+        //public override int GetHashCode()
+        //{
+        //    return (IsOpen, Position).GetHashCode();
+        //}
     }
 }

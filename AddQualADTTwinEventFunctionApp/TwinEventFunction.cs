@@ -31,48 +31,21 @@ namespace AddQualADTTwinEventFunctionApp
                 log.LogInformation(jObject["dataschema"].ToString());
                 if (jObject["dataschema"].ToString().Equals("dtmi:com:AddQual:Factory:ScanBox:Cobot:URCobot;1"))
                 {
-                    BasicDigitalTwin urCobotBasicDigitalTwin = await GetBasicDigitalTwinAsync(twinId: "URCobot", digitalTwinsClient: digitalTwinsClient);
                     URCobotModel urCobotModel = JsonConvert.DeserializeObject<URCobotModel>(eventGridEvent.Data.ToString());
-                    URCobotTwinModel existingURCobotTwinModel = URCobotTwinModel.GetFromBasicDigitalTwin(urCobotBasicDigitalTwin);
-                    URCobotTwinModel newURCobotTwinModel = URCobotTwinModel.GetFromExistingDigitalTwin(urCobotModel: urCobotModel);
-                    log.LogInformation(JsonConvert.SerializeObject(existingURCobotTwinModel));
-                    log.LogInformation(JsonConvert.SerializeObject(newURCobotTwinModel));
-                    if (existingURCobotTwinModel.Equals(newURCobotTwinModel))
-                    {
-                        log.LogInformation("URCobot Twin Is Not Updated!");
-                    }
-                    else
-                    {
-                        log.LogInformation("URCobot Twin Is Updated!");
-                        //JsonPatchDocument azureJsonPatchDocument = new JsonPatchDocument();
-                        //azureJsonPatchDocument.AppendAdd("/ActualQJointPosition", newURCobotTwinModel.ActualQJointPosition);
-                        //azureJsonPatchDocument.AppendAdd("/IsMoving", newURCobotTwinModel.IsMoving);
-                        //await digitalTwinsClient.UpdateDigitalTwinAsync("URCobot", azureJsonPatchDocument);
-                    }
-
+                    URCobotTwinModel urCobotTwinModel = URCobotTwinModel.GetFromExistingDigitalTwin(urCobotModel: urCobotModel);
+                    JsonPatchDocument azureJsonPatchDocument = new JsonPatchDocument();
+                    azureJsonPatchDocument.AppendAdd("/ActualQJointPosition", urCobotTwinModel.ActualQJointPosition);
+                    azureJsonPatchDocument.AppendAdd("/IsInvoked", urCobotTwinModel.IsInvoked);
+                    await digitalTwinsClient.UpdateDigitalTwinAsync("URCobot", azureJsonPatchDocument);
                 }
                 else if (jObject["dataschema"].ToString().Equals("dtmi:com:AddQual:Factory:ScanBox:Cobot:URGripper;1"))
                 {
-                    BasicDigitalTwin urGripperBasicDigitalTwin = await GetBasicDigitalTwinAsync(twinId: "URGripper", digitalTwinsClient: digitalTwinsClient);
                     URGripperModel urGripperModel = JsonConvert.DeserializeObject<URGripperModel>(eventGridEvent.Data.ToString());
-                    URGripperTwinModel existingURGripperTwinModel = URGripperTwinModel.GetFromBasicDigitalTwin(urGripperBasicDigitalTwin);
-                    URGripperTwinModel newURGripperTwinModel = URGripperTwinModel.GetFromExistingDigitalTwin(
-                        urGripperModel: urGripperModel, existingURGripperTwinModel: existingURGripperTwinModel);
-                    log.LogInformation(JsonConvert.SerializeObject(existingURGripperTwinModel));
-                    log.LogInformation(JsonConvert.SerializeObject(newURGripperTwinModel));
-                    if (existingURGripperTwinModel.Equals(newURGripperTwinModel))
-                    {
-                        log.LogInformation("URGripper Twin Is Not Updated!");
-                    }
-                    else
-                    {
-                        log.LogInformation("URGripper Twin Is Updated!");
-                        //JsonPatchDocument azureJsonPatchDocument = new JsonPatchDocument();
-                        //azureJsonPatchDocument.AppendAdd("/IsOpen", newURGripperTwinModel.IsOpen);
-                        //azureJsonPatchDocument.AppendAdd("/Position", newURGripperTwinModel.Position);
-                        //await digitalTwinsClient.UpdateDigitalTwinAsync("URGripper", azureJsonPatchDocument);
-                    }
-                    
+                    URGripperTwinModel urGripperTwinModel = URGripperTwinModel.GetFromExistingDigitalTwin(urGripperModel: urGripperModel);
+                    JsonPatchDocument azureJsonPatchDocument = new JsonPatchDocument();
+                    azureJsonPatchDocument.AppendAdd("/IsOpen", urGripperTwinModel.IsOpen);
+                    azureJsonPatchDocument.AppendAdd("/IsInvoked", urGripperTwinModel.IsInvoked);
+                    await digitalTwinsClient.UpdateDigitalTwinAsync("URGripper", azureJsonPatchDocument);
                 }
             }
         }

@@ -5,7 +5,7 @@ namespace AddQualADTTwinEventFunctionApp.Model
 {
     public class URCobotTwinModel
     {
-        public bool IsMoving { get; set; }
+        public bool IsInvoked { get; set; }
         public JointPositionModel? ActualQJointPosition { get; set; }
         public static URCobotTwinModel GetFromBasicDigitalTwin(BasicDigitalTwin basicDigitalTwin)
         {
@@ -21,7 +21,7 @@ namespace AddQualADTTwinEventFunctionApp.Model
                             JointPositionModel actualQJointPositionModel = JsonConvert.DeserializeObject<JointPositionModel>(value.ToString());
                             if (actualQJointPositionModel != null) urCobotTwinModel.ActualQJointPosition = actualQJointPositionModel;
                         }
-                        if (property.Equals("IsMoving"))
+                        if (property.Equals("IsInvoked"))
                         {
                             if (value is not null)
                             {
@@ -29,7 +29,7 @@ namespace AddQualADTTwinEventFunctionApp.Model
                                 if (stringValue is not null)
                                 {
                                     bool booleanValue = bool.Parse(stringValue);
-                                    if (property.Equals("IsMoving")) urCobotTwinModel.IsMoving = booleanValue;
+                                    if (property.Equals("IsInvoked")) urCobotTwinModel.IsInvoked = booleanValue;
                                 }
                             }
                         }
@@ -44,29 +44,29 @@ namespace AddQualADTTwinEventFunctionApp.Model
             JointPositionModel targetQJointPositionModel = JointPositionModel.GetDegreesOfTargetQ(urCobotModel);
             URCobotTwinModel urCobotTwinModel = new URCobotTwinModel();
             urCobotTwinModel.ActualQJointPosition = actualQJointPositionModel;
-            if (actualQJointPositionModel.Equals(targetQJointPositionModel)) urCobotTwinModel.IsMoving = false;
-            else urCobotTwinModel.IsMoving = true;
+            if (actualQJointPositionModel.Equals(targetQJointPositionModel)) urCobotTwinModel.IsInvoked = false;
+            else urCobotTwinModel.IsInvoked = false;
             return urCobotTwinModel;
         }
-        public override bool Equals(object obj)
-        {
-            if (obj == null || GetType() != obj.GetType())
-                return false;
+        //public override bool Equals(object obj)
+        //{
+        //    if (obj == null || GetType() != obj.GetType())
+        //        return false;
 
-            URCobotTwinModel other = (URCobotTwinModel)obj;
+        //    URCobotTwinModel other = (URCobotTwinModel)obj;
 
-            return IsMoving == other.IsMoving
-                && ActualQJointPosition.Base == other.ActualQJointPosition.Base
-                && ActualQJointPosition.Shoulder == other.ActualQJointPosition.Shoulder
-                && ActualQJointPosition.Elbow == other.ActualQJointPosition.Elbow
-                && ActualQJointPosition.Wrist1 == other.ActualQJointPosition.Wrist1
-                && ActualQJointPosition.Wrist2 == other.ActualQJointPosition.Wrist2
-                && ActualQJointPosition.Wrist3 == other.ActualQJointPosition.Wrist3;
-        }
+        //    return IsMoving == other.IsMoving
+        //        && ActualQJointPosition.Base == other.ActualQJointPosition.Base
+        //        && ActualQJointPosition.Shoulder == other.ActualQJointPosition.Shoulder
+        //        && ActualQJointPosition.Elbow == other.ActualQJointPosition.Elbow
+        //        && ActualQJointPosition.Wrist1 == other.ActualQJointPosition.Wrist1
+        //        && ActualQJointPosition.Wrist2 == other.ActualQJointPosition.Wrist2
+        //        && ActualQJointPosition.Wrist3 == other.ActualQJointPosition.Wrist3;
+        //}
 
-        public override int GetHashCode()
-        {
-            return (IsMoving, ActualQJointPosition).GetHashCode();
-        }
+        //public override int GetHashCode()
+        //{
+        //    return (IsMoving, ActualQJointPosition).GetHashCode();
+        //}
     }
 }
