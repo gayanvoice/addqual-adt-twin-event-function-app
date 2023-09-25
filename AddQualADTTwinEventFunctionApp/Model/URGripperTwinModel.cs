@@ -1,4 +1,5 @@
 using Azure.DigitalTwins.Core;
+using System;
 
 namespace AddQualADTTwinEventFunctionApp.Model
 {
@@ -45,8 +46,7 @@ namespace AddQualADTTwinEventFunctionApp.Model
             if (obj == null || GetType() != obj.GetType())
                 return false;
 
-            URGripperTwinModel other = (URGripperTwinModel)obj;
-
+            URGripperTwinModel other = (URGripperTwinModel) obj;
             return IsOpen == other.IsOpen && Position == other.Position;
         }
 
