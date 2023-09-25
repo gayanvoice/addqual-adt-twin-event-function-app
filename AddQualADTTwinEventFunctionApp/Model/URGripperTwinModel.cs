@@ -6,7 +6,7 @@ namespace AddQualADTTwinEventFunctionApp.Model
     {
         public int Position { get; set; }
         public bool IsOpen{ get; set; }
-        public static URGripperTwinModel Get(BasicDigitalTwin basicDigitalTwin)
+        public static URGripperTwinModel GetFromBasicDigitalTwin(BasicDigitalTwin basicDigitalTwin)
         {
             URGripperTwinModel urGripperTwinModel = new URGripperTwinModel();
             foreach (string property in basicDigitalTwin.Contents.Keys)
@@ -26,6 +26,33 @@ namespace AddQualADTTwinEventFunctionApp.Model
                 }
             }
             return urGripperTwinModel;
+        }
+        public static URGripperTwinModel GetFromExistingDigitalTwin(
+            URGripperModel urGripperModel, 
+            URGripperTwinModel existingURGripperTwinModel)
+        {
+            URGripperTwinModel urGripperTwinModel = new URGripperTwinModel();
+            if (existingURGripperTwinModel.Position == urGripperModel.data.POS)
+            {
+                if (urGripperModel.data.POS < 10) urGripperTwinModel.IsOpen = true;
+                else urGripperTwinModel.IsOpen = false;
+            }
+            urGripperTwinModel.Position = urGripperModel.data.POS;
+            return urGripperTwinModel;
+        }
+        public override bool Equals(object obj)
+        {
+            if (obj == null || GetType() != obj.GetType())
+                return false;
+
+            URGripperTwinModel other = (URGripperTwinModel)obj;
+
+            return IsOpen == other.IsOpen && Position == other.Position;
+        }
+
+        public override int GetHashCode()
+        {
+            return (IsOpen, Position).GetHashCode();
         }
     }
 }

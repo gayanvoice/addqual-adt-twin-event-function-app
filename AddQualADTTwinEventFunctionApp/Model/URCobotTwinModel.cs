@@ -7,7 +7,7 @@ namespace AddQualADTTwinEventFunctionApp.Model
     {
         public bool IsMoving { get; set; }
         public JointPositionModel? ActualQJointPosition { get; set; }
-        public static URCobotTwinModel Get(BasicDigitalTwin basicDigitalTwin)
+        public static URCobotTwinModel GetFromBasicDigitalTwin(BasicDigitalTwin basicDigitalTwin)
         {
             URCobotTwinModel urCobotTwinModel = new URCobotTwinModel();
             foreach (string property in basicDigitalTwin.Contents.Keys)
@@ -37,6 +37,31 @@ namespace AddQualADTTwinEventFunctionApp.Model
                 }
             }
             return urCobotTwinModel;
+        }
+        public static URCobotTwinModel GetFromExistingDigitalTwin(URCobotModel urCobotModel)
+        {
+            JointPositionModel actualQJointPositionModel = JointPositionModel.GetDegreesOfActualQ(urCobotModel);
+            JointPositionModel targetQJointPositionModel = JointPositionModel.GetDegreesOfTargetQ(urCobotModel);
+            URCobotTwinModel urCobotTwinModel = new URCobotTwinModel();
+            urCobotTwinModel.ActualQJointPosition = actualQJointPositionModel;
+            if (actualQJointPositionModel.Equals(targetQJointPositionModel)) urCobotTwinModel.IsMoving = false;
+            else urCobotTwinModel.IsMoving = true;
+            return urCobotTwinModel;
+        }
+        public override bool Equals(object obj)
+        {
+            if (obj == null || GetType() != obj.GetType())
+                return false;
+
+            URCobotTwinModel other = (URCobotTwinModel)obj;
+
+            return IsMoving == other.IsMoving
+                && ActualQJointPosition == other.ActualQJointPosition;
+        }
+
+        public override int GetHashCode()
+        {
+            return (IsMoving, ActualQJointPosition).GetHashCode();
         }
     }
 }
