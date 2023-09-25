@@ -1,5 +1,4 @@
 using Azure.DigitalTwins.Core;
-using System;
 
 namespace AddQualADTTwinEventFunctionApp.Model
 {

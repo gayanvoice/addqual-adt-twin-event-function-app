@@ -56,7 +56,12 @@ namespace AddQualADTTwinEventFunctionApp.Model
             URCobotTwinModel other = (URCobotTwinModel)obj;
 
             return IsMoving == other.IsMoving
-                && ActualQJointPosition == other.ActualQJointPosition;
+                && ActualQJointPosition.Base == other.ActualQJointPosition.Base
+                && ActualQJointPosition.Shoulder == other.ActualQJointPosition.Shoulder
+                && ActualQJointPosition.Elbow == other.ActualQJointPosition.Elbow
+                && ActualQJointPosition.Wrist1 == other.ActualQJointPosition.Wrist1
+                && ActualQJointPosition.Wrist2 == other.ActualQJointPosition.Wrist2
+                && ActualQJointPosition.Wrist3 == other.ActualQJointPosition.Wrist3;
         }
 
         public override int GetHashCode()
