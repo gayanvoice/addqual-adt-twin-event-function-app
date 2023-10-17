@@ -13,17 +13,22 @@ using Newtonsoft.Json.Linq;
 using System.Threading.Tasks;
 using AddQualADTTwinEventFunctionApp.Root;
 using Azure;
+using Microsoft.Azure.Cosmos;
 
 namespace AddQualADTTwinEventFunctionApp
 {
     public static class TwinEventFunction
     {
         private static readonly string ADT_SERVICE_URL = Environment.GetEnvironmentVariable("ADT_SERVICE_URL");
+        private static readonly string cosmosUri = Environment.GetEnvironmentVariable("COSMOS_URI");
+        private static readonly string cosmosKey = Environment.GetEnvironmentVariable("COSMOS_KEY");
         [FunctionName("TwinEventFunction")]
         public static async Task RunAsync([EventGridTrigger]EventGridEvent eventGridEvent, ILogger log)
         {
             DefaultAzureCredential defaultAzureCredential = new DefaultAzureCredential();
             DigitalTwinsClient digitalTwinsClient = new DigitalTwinsClient(endpoint: new Uri(ADT_SERVICE_URL), credential: defaultAzureCredential);
+            //CosmosClient cosmosClient = new CosmosClient(accountEndpoint: cosmosUri, authKeyOrResourceToken: cosmosKey);
+            //Database cobotDatabase = await cosmosClient.CreateDatabaseIfNotExistsAsync(id: "AddQualCobotTelemetryDatabase");
 
             if (eventGridEvent != null && eventGridEvent.Data != null)
             {
@@ -32,28 +37,20 @@ namespace AddQualADTTwinEventFunctionApp
                 if (jObject["dataschema"].ToString().Equals("dtmi:com:AddQual:Factory:ScanBox:Cobot:URCobot;1"))
                 {
                     URCobotModel urCobotModel = JsonConvert.DeserializeObject<URCobotModel>(eventGridEvent.Data.ToString());
-                    URCobotTwinModel urCobotTwinModel = URCobotTwinModel.GetFromExistingDigitalTwin(urCobotModel: urCobotModel);
-                    JsonPatchDocument azureJsonPatchDocument = new JsonPatchDocument();
-                    azureJsonPatchDocument.AppendAdd("/ActualQJointPosition", urCobotTwinModel.ActualQJointPosition);
-                    azureJsonPatchDocument.AppendAdd("/IsInvoked", urCobotTwinModel.IsInvoked);
-                    await digitalTwinsClient.UpdateDigitalTwinAsync("URCobot", azureJsonPatchDocument);
-                }
-                else if (jObject["dataschema"].ToString().Equals("dtmi:com:AddQual:Factory:ScanBox:Cobot:URGripper;1"))
-                {
-                    URGripperModel urGripperModel = JsonConvert.DeserializeObject<URGripperModel>(eventGridEvent.Data.ToString());
-                    URGripperTwinModel urGripperTwinModel = URGripperTwinModel.GetFromExistingDigitalTwin(urGripperModel: urGripperModel);
-                    JsonPatchDocument azureJsonPatchDocument = new JsonPatchDocument();
-                    azureJsonPatchDocument.AppendAdd("/IsOpen", urGripperTwinModel.IsOpen);
-                    azureJsonPatchDocument.AppendAdd("/IsInvoked", urGripperTwinModel.IsInvoked);
-                    await digitalTwinsClient.UpdateDigitalTwinAsync("URGripper", azureJsonPatchDocument);
+                    log.LogInformation(JsonConvert.SerializeObject(urCobotModel));
+                    //CobotRecord cobotRecord = new(
+                    //        id: EncryptionHelper.MD5Encryption(dateTime.ToString()),
+                    //        deviceId: "Cobot",
+                    //        timestamp: dateTime.ToString("yyyyMMddHHmmssffff"),
+                    //        elapsedTime: rootModel.Data.Patch.Find(patch => patch.Path.Contains("/ElapsedTime")).Value);
+                    //Container cobotContainer = cobotDatabase.GetContainer(id: "cobotContainer");
+                    //CobotRecord cobotRecordItem = await cobotContainer.CreateItemAsync<CobotRecord>(
+                    //    item: cobotRecord,
+                    //    partitionKey: new PartitionKey("Cobot"));
+                    //log.LogInformation(JsonConvert.SerializeObject(cobotRecordItem, Formatting.Indented));
+
                 }
             }
-        }
-        private static async Task<BasicDigitalTwin> GetBasicDigitalTwinAsync(
-          string twinId, DigitalTwinsClient digitalTwinsClient)
-        {
-            Response<BasicDigitalTwin> twinResponse = await digitalTwinsClient.GetDigitalTwinAsync<BasicDigitalTwin>(twinId);
-            return twinResponse.Value;
         }
     }
 }
