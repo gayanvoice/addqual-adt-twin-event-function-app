@@ -14,6 +14,8 @@ using System.Threading.Tasks;
 using AddQualADTTwinEventFunctionApp.Root;
 using Azure;
 using Microsoft.Azure.Cosmos;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace AddQualADTTwinEventFunctionApp
 {
@@ -27,8 +29,8 @@ namespace AddQualADTTwinEventFunctionApp
         {
             DefaultAzureCredential defaultAzureCredential = new DefaultAzureCredential();
             DigitalTwinsClient digitalTwinsClient = new DigitalTwinsClient(endpoint: new Uri(ADT_SERVICE_URL), credential: defaultAzureCredential);
-            //CosmosClient cosmosClient = new CosmosClient(accountEndpoint: cosmosUri, authKeyOrResourceToken: cosmosKey);
-            //Database cobotDatabase = await cosmosClient.CreateDatabaseIfNotExistsAsync(id: "AddQualCobotTelemetryDatabase");
+            CosmosClient cosmosClient = new CosmosClient(accountEndpoint: cosmosUri, authKeyOrResourceToken: cosmosKey);
+            Database cobotDatabase = await cosmosClient.CreateDatabaseIfNotExistsAsync(id: "AddQualCobotTelemetryDatabase");
 
             if (eventGridEvent != null && eventGridEvent.Data != null)
             {
@@ -38,19 +40,33 @@ namespace AddQualADTTwinEventFunctionApp
                 {
                     URCobotModel urCobotModel = JsonConvert.DeserializeObject<URCobotModel>(eventGridEvent.Data.ToString());
                     log.LogInformation(JsonConvert.SerializeObject(urCobotModel));
-                    //CobotRecord cobotRecord = new(
-                    //        id: EncryptionHelper.MD5Encryption(dateTime.ToString()),
-                    //        deviceId: "Cobot",
-                    //        timestamp: dateTime.ToString("yyyyMMddHHmmssffff"),
-                    //        elapsedTime: rootModel.Data.Patch.Find(patch => patch.Path.Contains("/ElapsedTime")).Value);
-                    //Container cobotContainer = cobotDatabase.GetContainer(id: "cobotContainer");
-                    //CobotRecord cobotRecordItem = await cobotContainer.CreateItemAsync<CobotRecord>(
-                    //    item: cobotRecord,
-                    //    partitionKey: new PartitionKey("Cobot"));
-                    //log.LogInformation(JsonConvert.SerializeObject(cobotRecordItem, Formatting.Indented));
+                    DateTime dateTime = DateTime.Now;
+                    URCobotRecord urCobotRecord = new(
+                            id: MD5Encryption(dateTime.ToString()),
+                            timestamp: dateTime.ToString("yyyyMMddHHmmssffff"),
+                            target_q: urCobotModel.data.TargetQ,
+                            target_qd: urCobotModel.data.TargetQd);
+                    Container cobotContainer = cobotDatabase.GetContainer(id: "cobotContainer");
+                    URCobotRecord cobotRecordItem = await cobotContainer.CreateItemAsync<URCobotRecord>(
+                        item: urCobotRecord,
+                        partitionKey: new PartitionKey("Cobot"));
+                    log.LogInformation(JsonConvert.SerializeObject(cobotRecordItem, Formatting.Indented));
 
                 }
             }
+        }
+        public static string MD5Encryption(string encryptionText)
+        {
+
+            MD5 md5 = MD5.Create();
+            byte[] array = Encoding.UTF8.GetBytes(encryptionText);
+            array = md5.ComputeHash(array);
+            StringBuilder sb = new StringBuilder();
+            foreach (byte ba in array)
+            {
+                sb.Append(ba.ToString("x2").ToLower());
+            }
+            return sb.ToString();
         }
     }
 }
