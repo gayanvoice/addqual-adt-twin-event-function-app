@@ -28,6 +28,7 @@ namespace AddQualADTTwinEventFunctionApp
         [FunctionName("TwinEventFunction")]
         public static async Task RunAsync([EventGridTrigger]EventGridEvent eventGridEvent, ILogger log)
         {
+            log.LogInformation(eventGridEvent.Data.ToString());
             DefaultAzureCredential defaultAzureCredential = new DefaultAzureCredential();
             DigitalTwinsClient digitalTwinsClient = new DigitalTwinsClient(endpoint: new Uri(ADT_SERVICE_URL), credential: defaultAzureCredential);
             CosmosClient cosmosClient = new CosmosClient(accountEndpoint: cosmosUri, authKeyOrResourceToken: cosmosKey);
