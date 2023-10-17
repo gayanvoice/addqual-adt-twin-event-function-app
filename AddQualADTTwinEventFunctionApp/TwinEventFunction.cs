@@ -16,6 +16,7 @@ using Azure;
 using Microsoft.Azure.Cosmos;
 using System.Security.Cryptography;
 using System.Text;
+using System.Collections.Generic;
 
 namespace AddQualADTTwinEventFunctionApp
 {
@@ -45,12 +46,34 @@ namespace AddQualADTTwinEventFunctionApp
                             id: MD5Encryption(dateTime.ToString()),
                             timestamp: dateTime.ToString("yyyyMMddHHmmssffff"),
                             target_q: urCobotModel.data.TargetQ,
-                            target_qd: urCobotModel.data.TargetQd);
-                    Container cobotContainer = cobotDatabase.GetContainer(id: "cobotContainer");
-                    URCobotRecord cobotRecordItem = await cobotContainer.CreateItemAsync<URCobotRecord>(
-                        item: urCobotRecord,
-                        partitionKey: new PartitionKey("Cobot"));
-                    log.LogInformation(JsonConvert.SerializeObject(cobotRecordItem, Formatting.Indented));
+                            target_qd: urCobotModel.data.TargetQd,
+                            target_qdd: urCobotModel.data.TargetQdd,
+                            target_current: urCobotModel.data.TargetCurrent,
+                            target_moment: urCobotModel.data.TargetMoment,
+                            actual_current: urCobotModel.data.ActualCurrent,
+                            actual_q: urCobotModel.data.ActualQ,
+                            actual_qd: urCobotModel.data.ActualQd,
+                            joint_control_output: urCobotModel.data.JointControlOutput,
+                            actual_tcp_force: urCobotModel.data.ActualTCPForce,
+                            joint_temperatures: urCobotModel.data.JointTemperatures,
+                            joint_mode: urCobotModel.data.JointMode,
+                            tool_accelerometer: urCobotModel.data.ToolAccelerometer,
+                            speed_scaling: urCobotModel.data.SpeedScaling,
+                            actual_momentum: urCobotModel.data.ActualMomentum,
+                            actual_main_voltage: urCobotModel.data.ActualMainVoltage,
+                            actual_robot_voltage: urCobotModel.data.ActualRobotVoltage,
+                            actual_robot_current: urCobotModel.data.ActualRobotCurrent,
+                            actual_joint_voltage: urCobotModel.data.ActualJointVoltage,
+                            runtime_state: urCobotModel.data.RuntimeState,
+                            robot_mode: urCobotModel.data.RobotMode,
+                            safety_mode: urCobotModel.data.SafetyMode,
+                            analog_io_types: urCobotModel.data.AnalogIoTypes,
+                            io_current: urCobotModel.data.IoCurrent,
+                            tool_mode: urCobotModel.data.ToolMode,
+                            tool_output_voltage: urCobotModel.data.ToolOutputVoltage,
+                            tool_output_current: urCobotModel.data.ToolOutputCurrent);
+                    Container container = await cobotDatabase.CreateContainerIfNotExistsAsync("CobotContainer", "/Cobot", 400);
+                    await container.CreateItemAsync<URCobotRecord>(urCobotRecord);
 
                 }
             }
